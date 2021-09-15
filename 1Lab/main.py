@@ -1,3 +1,7 @@
+import numpy as np
+from matplotlib import pyplot as plt
+
+
 def bisection_method(func, l, r, eps):
     def f(x):
         return eval(func)
@@ -5,7 +9,7 @@ def bisection_method(func, l, r, eps):
     xm = (l + r) / 2
     L = r - l
 
-    for i in range(0, 100):
+    for i in range(1, 100):
         x1 = l + L / 4
         x2 = r - L / 4
 
@@ -53,7 +57,7 @@ def golden_section(func, l, r, eps, t):
     L = r - l
     x1 = r - t * L
     x2 = l + t * L
-    for i in range(0, 100):
+    for i in range(1, 100):
         if f(x2) < f(x1):
             l = x1
             L = r - l
@@ -83,12 +87,8 @@ def findMin(a, b, x1, x2):
         print("x2 =", x2)
 
 
-def newtons_method(func, x0):
-    def f(x):
-        f = eval(func)
-        return f
-
-    for i in range(0, 1000):
+def newtons_method(x0):
+    for i in range(1, 1000):
         xn = x0 - (x0 * (x0 ** 2 - 4) / 2) / (3 * x0 ** 2 / 2 - 2)
         if abs(xn - x0) < 0.0001:
             break
@@ -100,10 +100,31 @@ def newtons_method(func, x0):
     print("**********************")
 
 
+def createGraph(func):
+    x = np.linspace(-5, 5, 100)
+
+    y = eval(func)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.spines['left'].set_position('center')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+
+    plt.plot(x, y, 'r')
+
+    plt.show()
+
+
 def main():
-    bisection_method("(x ** 2 - 4) ** 2 / 8", 0, 10, 0.0001)
-    golden_section("(x ** 2 - 4) ** 2 / 8", 0, 10, 0.0001, 0.61803)
-    newtons_method("((x0**2 - 4)**2)/8", 5)
+    function = "((x ** 2 - 4) ** 2 /9)-1"
+    bisection_method(function, 0, 10, 0.0001)
+    golden_section(function, 0, 10, 0.0001, 0.61803)
+    newtons_method(5)
+    createGraph(function)
 
 
 if __name__ == "__main__":

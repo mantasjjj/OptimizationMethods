@@ -1,3 +1,7 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+
 def golden_section(func, l, r, eps, t):
     def f(x):
         return eval(func)
@@ -15,18 +19,21 @@ def golden_section(func, l, r, eps, t):
             r = x2
             L = r - l
             x2 = x1
-            x1 = r - t*L
+            x1 = r - t * L
 
         if L < eps:
             break
 
     print("Number of iteratioons %d" % i)
-    findMin(f(x1), f(x2), x1, x2)
+    xmin = findMin(f(x1), f(x2), x1, x2)
+    createGraph(f(xmin))
+
 
 def findMin(a, b, x1, x2):
     if a < b:
         print("f(x1) =", a)
         print("x1 =", x1)
+        return x1
     else:
         print("f(x2) =", b)
         print("x2 =", x2)

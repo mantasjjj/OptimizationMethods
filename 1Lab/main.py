@@ -1,5 +1,11 @@
+import random
+
 import numpy as np
 from matplotlib import pyplot as plt
+
+bisec_method_points = []
+newton_method_points = []
+golden_sec_method_points = []
 
 
 def bisection_method(func, l, r, eps):
@@ -31,6 +37,7 @@ def bisection_method(func, l, r, eps):
             L = r - l
             if L < eps:
                 break
+        bisec_method_points.append([l, r])
 
     print("Bisection method")
     print("Number of iterations: %d" % i)
@@ -68,6 +75,7 @@ def golden_section(func, l, r, eps, t):
             L = r - l
             x2 = x1
             x1 = r - t * L
+        golden_sec_method_points.append([l, r])
 
         if L < eps:
             break
@@ -87,10 +95,22 @@ def findMin(a, b, x1, x2):
         print("x2 =", x2)
 
 
-def newtons_method(x0):
+def newtons_method(func, x0, eps):
+    def f(x):
+        return eval(func)
+
+    def first_diff(x):
+        h = 1e-5
+        return (f(x + h) - f(x)) / h
+
+    def second_diff(x):
+        h = 1e-5
+        return (first_diff(x + h) - first_diff(x)) / h
+
     for i in range(1, 1000):
-        xn = x0 - (x0 * (x0 ** 2 - 4) / 2) / (3 * x0 ** 2 / 2 - 2)
-        if abs(xn - x0) < 0.0001:
+        xn = x0 - first_diff(x0) / second_diff(x0)
+        newton_method_points.append(xn)
+        if abs(xn - x0) < eps:
             break
         x0 = xn
 
@@ -100,13 +120,28 @@ def newtons_method(x0):
     print("**********************")
 
 
-def createGraph(func):
+def generatePoints(point_array):
+    for i in range(0, len(point_array)):
+        r = random.random()
+        b = random.random()
+        g = random.random()
+        a = 1
+        color = (r, g, b, a)
+        plt.plot(point_array[i][0], 0, color=color)
+        plt.scatter(point_array[i][1], 0, color=color)
+
+
+def createGraph(func, char):
     x = np.linspace(-5, 5, 100)
 
     y = eval(func)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(1, 1, 1)
+    print("newtons: ", newton_method_points)
+    print("bisec: ", bisec_method_points)
+    print("golden: ", golden_sec_method_points)
+
+    fig1 = plt.figure()
+    ax = fig1.add_subplot(1, 1, 1)
     ax.spines['left'].set_position('center')
     ax.spines['bottom'].set_position('zero')
     ax.spines['right'].set_color('none')
@@ -114,8 +149,15 @@ def createGraph(func):
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
 
-    plt.plot(x, y, 'r')
+    if char == 'n':
+        a = [0] * len(newton_method_points)
+        plt.plot(newton_method_points, a, 'go')
+    elif char == 'b':
+        generatePoints(bisec_method_points)
+    elif char == 'g':
+        generatePoints(golden_sec_method_points)
 
+    plt.plot(x, y, 'r')
     plt.show()
 
 
@@ -123,8 +165,8 @@ def main():
     function = "((x ** 2 - 4) ** 2 /9)-1"
     bisection_method(function, 0, 10, 0.0001)
     golden_section(function, 0, 10, 0.0001, 0.61803)
-    newtons_method(5)
-    createGraph(function)
+    newtons_method(function, 5, 0.0001)
+    createGraph(function, 'n')
 
 
 if __name__ == "__main__":

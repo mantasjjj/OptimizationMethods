@@ -127,8 +127,12 @@ def generatePoints(point_array):
         g = random.random()
         a = 1
         color = (r, g, b, a)
-        plt.plot(point_array[i][0], 0, color=color)
+        plt.scatter(point_array[i][0], 0, color=color)
         plt.scatter(point_array[i][1], 0, color=color)
+
+        for i in range(0, len(point_array)):
+            plt.annotate(i+1, (point_array[i][0], 0))
+            plt.annotate(i+1, (point_array[i][1], 0))
 
 
 def createGraph(func, char):
@@ -151,7 +155,9 @@ def createGraph(func, char):
 
     if char == 'n':
         a = [0] * len(newton_method_points)
-        plt.plot(newton_method_points, a, 'go')
+        plt.scatter(newton_method_points, a)
+        for i in range(0, len(newton_method_points)):
+            plt.annotate(i+1, (newton_method_points[i], a[i]))
     elif char == 'b':
         generatePoints(bisec_method_points)
     elif char == 'g':
@@ -162,7 +168,7 @@ def createGraph(func, char):
 
 
 def main():
-    function = "((x ** 2 - 4) ** 2 /9)-1"
+    function = "((x ** 2 - 4) ** 2 /9-1)"
     bisection_method(function, 0, 10, 0.0001)
     golden_section(function, 0, 10, 0.0001, 0.61803)
     newtons_method(function, 5, 0.0001)

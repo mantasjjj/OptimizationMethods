@@ -26,7 +26,7 @@ def bisection_method(func, l, r, eps):
             if L < eps:
                 break
         elif f(x2) < f(xm):
-            r = xm
+            l = xm
             xm = x2
             L = r - l
             if L < eps:
@@ -46,13 +46,13 @@ def bisection_method(func, l, r, eps):
 
 
 def find_min(a, b, c, x1, x2, xm):
-    if a < b and a < c:
+    if a <= b and a <= c:
         print("f(x1) =", a)
         print("x1 =", x1)
-    if b < a and b < c:
+    if b <= a and b <= c:
         print("f(x2) =", b)
         print("x2 =", x2)
-    if c < a and c < b:
+    if c <= a and c <= b:
         print("f(xm) =", c)
         print("xm =", xm)
 
@@ -127,16 +127,21 @@ def generatePoints(point_array):
         g = random.random()
         a = 1
         color = (r, g, b, a)
-        plt.scatter(point_array[i][0], 0, color=color)
-        plt.scatter(point_array[i][1], 0, color=color)
+        if (i == 0 or i == 1 or i == 3 or i == 15):
+            plt.scatter(point_array[i][0], 0, color=color)
+            plt.scatter(point_array[i][1], 0, color=color)
 
         for i in range(0, len(point_array)):
-            plt.annotate(i+1, (point_array[i][0], 0))
-            plt.annotate(i+1, (point_array[i][1], 0))
+            if (i == 0 or i == 1 or i == 3):
+                plt.annotate(i + 1, (point_array[i][0], 0))
+                plt.annotate(i + 1, (point_array[i][1], 0))
+            if (i == 15):
+                plt.annotate(i + 2, (point_array[i][0], 0))
+                plt.annotate(i + 2, (point_array[i][1], 0))
 
 
 def createGraph(func, char):
-    x = np.linspace(-5, 5, 100)
+    x = np.linspace(0, 5, 100)
 
     y = eval(func)
 
@@ -146,6 +151,7 @@ def createGraph(func, char):
 
     fig1 = plt.figure()
     ax = fig1.add_subplot(1, 1, 1)
+    ax.set_ylim([-2, 3])
     ax.spines['left'].set_position('center')
     ax.spines['bottom'].set_position('zero')
     ax.spines['right'].set_color('none')
@@ -157,7 +163,7 @@ def createGraph(func, char):
         a = [0] * len(newton_method_points)
         plt.scatter(newton_method_points, a)
         for i in range(0, len(newton_method_points)):
-            plt.annotate(i+1, (newton_method_points[i], a[i]))
+            plt.annotate(i + 1, (newton_method_points[i], a[i]))
     elif char == 'b':
         generatePoints(bisec_method_points)
     elif char == 'g':
@@ -172,7 +178,7 @@ def main():
     bisection_method(function, 0, 10, 0.0001)
     golden_section(function, 0, 10, 0.0001, 0.61803)
     newtons_method(function, 5, 0.0001)
-    createGraph(function, 'n')
+    createGraph(function, 'b')
 
 
 if __name__ == "__main__":

@@ -9,6 +9,8 @@ golden_sec_method_points = []
 
 
 def bisection_method(func, l, r, eps):
+    counter = 0
+
     def f(x):
         return eval(func)
 
@@ -19,29 +21,34 @@ def bisection_method(func, l, r, eps):
         x1 = l + L / 4
         x2 = r - L / 4
 
-        if f(x1) < f(xm):
+        fxm = f(xm)
+
+        if f(x1) < fxm:
+            counter += 2
             r = xm
             xm = x1
             L = r - l
             if L < eps:
                 break
-        elif f(x2) < f(xm):
+        elif f(x2) < fxm:
+            counter += 3
             l = xm
             xm = x2
             L = r - l
             if L < eps:
                 break
         else:
+            counter += 3
             l = x1
             r = x2
             L = r - l
             if L < eps:
                 break
         bisec_method_points.append([l, r])
-
     print("Bisection method")
     print("Number of iterations: %d" % i)
     find_min(f(x1), f(x2), f(xm), x1, x2, xm)
+    print("Number of functions calculated: %d" % counter)
     print("***********************")
 
 
@@ -58,6 +65,7 @@ def find_min(a, b, c, x1, x2, xm):
 
 
 def golden_section(func, l, r, eps, t):
+    counter = 0
     def f(x):
         return eval(func)
 
@@ -65,6 +73,7 @@ def golden_section(func, l, r, eps, t):
     x1 = r - t * L
     x2 = l + t * L
     for i in range(1, 100):
+        counter += 2
         if f(x2) < f(x1):
             l = x1
             L = r - l
@@ -83,6 +92,7 @@ def golden_section(func, l, r, eps, t):
     print("Golden section method")
     print("Number of iteratioons %d" % i)
     findMin(f(x1), f(x2), x1, x2)
+    print("Number of functions calculated: %d" % counter)
     print("***********************")
 
 
@@ -96,6 +106,7 @@ def findMin(a, b, x1, x2):
 
 
 def newtons_method(func, x0, eps):
+    counter = 0
     def f(x):
         return eval(func)
 
@@ -109,6 +120,7 @@ def newtons_method(func, x0, eps):
 
     for i in range(1, 1000):
         xn = x0 - first_diff(x0) / second_diff(x0)
+        counter += 2
         newton_method_points.append(xn)
         if abs(xn - x0) < eps:
             break
@@ -117,6 +129,8 @@ def newtons_method(func, x0, eps):
     print("Newton's method")
     print("Number of iterations: %d" % i)
     print("xn: %f" % xn)
+    print("f(xn): %f" %f(xn))
+    print("Number of functions calculated: %d" % counter)
     print("**********************")
 
 
@@ -151,7 +165,7 @@ def createGraph(func, char):
 
     fig1 = plt.figure()
     ax = fig1.add_subplot(1, 1, 1)
-    ax.set_ylim([-2, 3])
+    ax.set(ylim=(-5,6))
     ax.spines['left'].set_position('center')
     ax.spines['bottom'].set_position('zero')
     ax.spines['right'].set_color('none')

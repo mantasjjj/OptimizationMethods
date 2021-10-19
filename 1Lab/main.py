@@ -16,29 +16,34 @@ def bisection_method(func, l, r, eps):
 
     xm = (l + r) / 2
     L = r - l
+    fxm = f(xm)
+    counter += 1
 
     for i in range(1, 100):
         x1 = l + L / 4
         x2 = r - L / 4
 
-        fxm = f(xm)
+        fx1 = f(x1)
+        counter += 1
+        if fx1 >= fxm:
+            fx2 = f(x2)
+            counter += 1
 
-        if f(x1) < fxm:
-            counter += 2
+        if fx1 < fxm:
             r = xm
             xm = x1
+            fxm = fx1
             L = r - l
             if L < eps:
                 break
-        elif f(x2) < fxm:
-            counter += 3
+        elif fx2 < fxm:
             l = xm
             xm = x2
+            fxm = fx2
             L = r - l
             if L < eps:
                 break
         else:
-            counter += 3
             l = x1
             r = x2
             L = r - l
@@ -72,18 +77,26 @@ def golden_section(func, l, r, eps, t):
     L = r - l
     x1 = r - t * L
     x2 = l + t * L
+    fx1 = f(x1)
+    fx2 = f(x2)
+    counter += 2
     for i in range(1, 100):
-        counter += 2
-        if f(x2) < f(x1):
+        if fx2 < fx1:
             l = x1
             L = r - l
             x1 = x2
+            fx1 = fx2
             x2 = l + t * L
+            fx2 = f(x2)
+            counter += 1
         else:
             r = x2
             L = r - l
             x2 = x1
+            fx2 = fx1
             x1 = r - t * L
+            fx1 = f(x1)
+            counter += 1
         golden_sec_method_points.append([l, r])
 
         if L < eps:
@@ -91,7 +104,7 @@ def golden_section(func, l, r, eps, t):
 
     print("Golden section method")
     print("Number of iteratioons %d" % i)
-    findMin(f(x1), f(x2), x1, x2)
+    findMin(fx1, fx2, x1, x2)
     print("Number of functions calculated: %d" % counter)
     print("***********************")
 
@@ -104,22 +117,11 @@ def findMin(a, b, x1, x2):
         print("f(x2) =", b)
         print("x2 =", x2)
 
-
 def newtons_method(func, x0, eps):
     counter = 0
-    def f(x):
-        return eval(func)
-
-    def first_diff(x):
-        h = 1e-5
-        return (f(x + h) - f(x)) / h
-
-    def second_diff(x):
-        h = 1e-5
-        return (first_diff(x + h) - first_diff(x)) / h
 
     for i in range(1, 1000):
-        xn = x0 - first_diff(x0) / second_diff(x0)
+        xn = x0 - first_deriv(x0, func) / second_deriv(x0, func)
         counter += 2
         newton_method_points.append(xn)
         if abs(xn - x0) < eps:
@@ -129,10 +131,20 @@ def newtons_method(func, x0, eps):
     print("Newton's method")
     print("Number of iterations: %d" % i)
     print("xn: %f" % xn)
-    print("f(xn): %f" %f(xn))
+    print("f(xn): %f" %f(xn, func))
     print("Number of functions calculated: %d" % counter)
     print("**********************")
 
+def f(x, func):
+    return eval(func)
+
+def first_deriv(x, func):
+    h = 1e-5
+    return (f(x + h, func) - f(x, func)) / h
+
+def second_deriv(x, func):
+    h = 1e-5
+    return (first_deriv(x + h, func) - first_deriv(x, func)) / h
 
 def generatePoints(point_array):
     for i in range(0, len(point_array)):
@@ -141,21 +153,16 @@ def generatePoints(point_array):
         g = random.random()
         a = 1
         color = (r, g, b, a)
-        if (i == 0 or i == 1 or i == 3 or i == 15):
-            plt.scatter(point_array[i][0], 0, color=color)
-            plt.scatter(point_array[i][1], 0, color=color)
+        plt.scatter(point_array[i][0], 0, color=color)
+        plt.scatter(point_array[i][1], 0, color=color)
 
         for i in range(0, len(point_array)):
-            if (i == 0 or i == 1 or i == 3):
-                plt.annotate(i + 1, (point_array[i][0], 0))
-                plt.annotate(i + 1, (point_array[i][1], 0))
-            if (i == 15):
-                plt.annotate(i + 2, (point_array[i][0], 0))
-                plt.annotate(i + 2, (point_array[i][1], 0))
+            plt.annotate(i + 1, (point_array[i][0], 0))
+            plt.annotate(i + 1, (point_array[i][1], 0))
 
 
 def createGraph(func, char):
-    x = np.linspace(0, 5, 100)
+    x = np.linspace(-5, 6, 100)
 
     y = eval(func)
 

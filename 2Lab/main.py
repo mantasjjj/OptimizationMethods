@@ -1,4 +1,5 @@
 from operator import itemgetter
+import random
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,13 +14,14 @@ def f(x1, x2):
 
 def plot2d(points, iterations, method):
     delta = 0.001
-    x = np.arange(0, 1, delta)
-    y = np.arange(0, 1, delta)
+    x = np.arange(0, 1.7, delta)
+    y = np.arange(0, 1.7, delta)
     X, Y = np.meshgrid(x, y)
     Z = (-1) * (0.125 * X * Y * (1 - X - Y))
-    CS = ax.contour(X, Y, Z, 10, linewidths=0.4)
+    CS = ax.contour(X, Y, Z, 60, linewidths=0.4)
     ax.clabel(CS, inline=True, fontsize=10)
     rangeNeeded = int(len(points) / 2)
+    rangeNeededSimplex = int(len(points) / 6)
     if method == 'gd':
         for i in range(0, rangeNeeded):
             if i % 2 == 0:
@@ -31,6 +33,18 @@ def plot2d(points, iterations, method):
             ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='x')
             plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
             plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
+    elif method == 'simplex':
+        for i in range(0, rangeNeededSimplex - 1):
+            r = random.random()
+            b = random.random()
+            g = random.random()
+            a = 1
+            color = (r, g, b, a)
+            ax.plot([points[i], points[i + 2], points[i + 4], points[i]],
+                    [points[i + 1], points[i + 3], points[i + 5], points[i + 1]], '-o', color=color)
+            plt.annotate(i + 1, (points[i] + 0.01, points[i + 1] + 0.02))
+            plt.annotate(i + 1, (points[i + 2] - 0.02, points[i + 3] + 0.01))
+            plt.annotate(i + 1, (points[i + 4] - 0.02, points[i + 5] + 0.01))
     plt.draw()
     plt.show()
 
@@ -139,6 +153,7 @@ def simplex_method(args, X0, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=
     simplex = [getPoint(X0, f(X0[0], X0[1]))]
     max_iterations = 2000
     counter = 0
+    points = []
 
     for i in range(0, len(args)):
         argList = list(X0)
@@ -148,6 +163,14 @@ def simplex_method(args, X0, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=
     for i in range(0, max_iterations):
         # 1. Sort
         simplex.sort(key=itemgetter('value'))
+
+        if i % 5 == 0:
+            points.append(simplex[0]['arg'][0])
+            points.append(simplex[0]['arg'][1])
+            points.append(simplex[1]['arg'][0])
+            points.append(simplex[1]['arg'][1])
+            points.append(simplex[2]['arg'][0])
+            points.append(simplex[2]['arg'][1])
 
         # 6. Check convergence
         if abs(simplex[0]['value'] - simplex[-1]['value']) < epsilon:
@@ -201,6 +224,7 @@ def simplex_method(args, X0, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=
             counter += 1
             simplex[j] = getPoint(reduce, reduce_value)
 
+    plot2d(points, 0, 'simplex')
     print("i: ", i, simplex[0]['arg'])
     print("Counter: ", counter)
 

@@ -24,15 +24,24 @@ def plot2d(points, iterations, method):
     rangeNeededSimplex = int(len(points) / 6)
     if method == 'gd':
         for i in range(0, rangeNeeded):
-            if i % 2 == 0:
+            if i + 2 < rangeNeeded and i % 2 == 0:
+                ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='.')
+                plt.annotate(iterations[i], (points[i], points[i] + 0.05))
+                plt.annotate(iterations[i + 1], (points[i + 1], points[i + 1] + 0.05))
+            elif i + 2 == rangeNeeded:
                 ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='x')
                 plt.annotate(iterations[i], (points[i], points[i] + 0.05))
                 plt.annotate(iterations[i + 1], (points[i + 1], points[i + 1] + 0.05))
     elif method == 'sd':
         for i in range(0, rangeNeeded):
-            ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='x')
-            plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
-            plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
+            if i + 2 < rangeNeeded:
+                ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='.')
+                plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
+                plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
+            elif i + 2 == rangeNeeded:
+                ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='x')
+                plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
+                plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
     elif method == 'simplex':
         for i in range(0, rangeNeededSimplex - 1):
             r = random.random()
@@ -86,6 +95,7 @@ def gradient_descent(func, args, X0, gama, epsilon):
         if gradMod < epsilon:
             print("i: ", i, "[", Xi[0], ",", Xi[1], "]")
             print("Counter: ", counter)
+            print("f(X) = ", f(Xi[0], Xi[1]))
             iterations.append(i)
             points.append(Xi[0])
             points.append(Xi[1])
@@ -141,6 +151,7 @@ def steepest_descent(func, args, X0, epsilon):
         if gradMod < epsilon:
             print("i: ", i, "[", Xi[0], ",", Xi[1], "]")
             print("Counter: ", counter)
+            print("f(X) = ", f(Xi[0], Xi[1]))
             break
     plot2d(points, 0, 'sd')
 
@@ -216,16 +227,17 @@ def simplex_method(args, X0, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=
             continue
 
         # 5. Reduce
+        reduce = [0] * len(args)
         for j in range(1, len(simplex)):
-            reduce = [0] * len(args)
             for k in range(0, len(args)):
-                reduce = simplex[0]['arg'][k] + beta * (simplex[j]['arg'][k] - simplex[0]['arg'][k])
+                reduce[k] = simplex[0]['arg'][k] + beta * (simplex[j]['arg'][k] - simplex[0]['arg'][k])
             reduce_value = f(reduce[0], reduce[1])
             counter += 1
             simplex[j] = getPoint(reduce, reduce_value)
 
     plot2d(points, 0, 'simplex')
-    print("i: ", i, simplex[0]['arg'])
+    print("i: ", i + 1, simplex[0]['arg'])
+    print("f(X) = ", f(simplex[0]['arg'][0], simplex[0]['arg'][1]))
     print("Counter: ", counter)
 
 
@@ -241,14 +253,14 @@ def main():
 
     # gradient_descent(F, [x1, x2], [0, 0], 0.01, 0.001)
     # gradient_descent(F, [x1, x2], [1, 1], 3, 0.001)
-    # gradient_descent(F, [x1, x2], [0.4, 0.9], 0.01, 0.001)
+    # gradient_descent(F, [x1, x2], [0.4, 0.9], 3, 0.001)
 
     # steepest_descent(F, [x1, x2], [0, 0], 0.001)
     # steepest_descent(F, [x1, x2], [1, 1], 0.001)
     # steepest_descent(F, [x1, x2], [0.4, 0.9], 0.001)
 
     # simplex_method([x1, x2], [0, 0])
-    simplex_method([x1, x2], [1, 1])
+    # simplex_method([x1, x2], [1, 1])
     # simplex_method([x1, x2], [0.4, 0.9])
 
 

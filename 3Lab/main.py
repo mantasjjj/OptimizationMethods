@@ -9,7 +9,6 @@ def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, r
     simplex = [getPoint(args, func(args))]
     max_iterations = 2000
     counter = 0
-    points = []
 
     for i in range(0, len(args)):
         argList = list(args)
@@ -19,9 +18,6 @@ def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, r
     for i in range(0, max_iterations):
         # 1. Sort
         simplex.sort(key=itemgetter('value'))
-
-        # if i < 6:
-        points.extend([tuple(sim['arg'] + [sim['value']]) for sim in simplex])
 
         # 6. Check convergence
         if abs(simplex[0]['value'] - simplex[-1]['value']) < epsilon:
@@ -75,7 +71,6 @@ def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, r
             counter += 1
             simplex[j] = getPoint(reduce, reduce_value)
 
-
     return simplex[0]['arg']
 
 
@@ -90,7 +85,7 @@ def optimization(func, constraints, args, epsilon):
             inequals.append(con.get("func"))
 
     penaltyFunction = lambda x: sum((abs(eq(x)) ** 2) for eq in equals) + sum(
-        (abs(min(0, iq(x))) ** 2) for iq in inequals)
+        (abs(max(0, iq(x))) ** 2) for iq in inequals)
 
     maxIterations = 100
     # Kaip pasirenkame r?
@@ -117,6 +112,7 @@ def main():
 
     g1 = lambda x: (2 * x[0] * x[1] + 2 * x[0] * x[2] + 2 * x[2] * x[1]) - 1
 
+    # https://stackoverflow.com/questions/37818596/penalty-function-method
     h1 = lambda x: x[0]
     h2 = lambda x: x[1]
     h3 = lambda x: x[2]
@@ -127,9 +123,8 @@ def main():
         {"type": "ineq", "func": h2},
         {"type": "ineq", "func": h3})
 
-    optimization(func, constraints, [0, 0, 0], 0.0001)
     optimization(func, constraints, [1, 1, 1], 0.0001)
-    optimization(func, constraints, [0.9, 0.4, 0.9], 0.0001)
+
 
 if __name__ == "__main__":
     main()

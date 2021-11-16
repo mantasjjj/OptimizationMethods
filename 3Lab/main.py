@@ -1,55 +1,85 @@
-from sympy import Symbol
+from operator import itemgetter
 
 
-def f(x1, x2, x3):
-    return -1 * x1 * x2 * x3
+def getPoint(arg, value):
+    return {"arg": arg, "value": value}
 
 
-def gradientFunction(func, x1, x2, x3):
-    return eval(func)
-
-
-def getGrad(func, args):
-    grad = []
-    for x in args:
-        grad.append(func.diff(x))
-    return grad
-
-
-# pritaikyt, kad su lambda veiktu
-def gradient_descent(func, args, X0, gama, epsilon):
-    i = 1
-    Xi = X0
-
-    grad = getGrad(func, args)
+def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=0.5):
+    simplex = [getPoint(args, func(args))]
+    max_iterations = 2000
     counter = 0
+    points = []
 
-    max_iterations = 5000
-    while i < max_iterations:
-        gradMod = 0
-        Xtemp = list(Xi)
-        for j in range(0, len(Xi)):
-            gradFunc = gradientFunction(str(grad[j]), Xtemp[0], Xtemp[1], Xtemp[2])
-            Xi[j] = Xi[j] - gama * gradFunc
-            counter += 1
-            gradMod += gradFunc
-        gradMod = abs(gradMod) / len(Xi)
-        print("i: ", i, "Xi[0]: ", Xi[0], "Xi[1]:", Xi[1], "Xi[2]:", Xi[2])
-        if gradMod < epsilon:
-            print("i: ", i, "[", Xi[0], ",", Xi[1], ",", Xi[2], "]")
-            print("Counter: ", counter)
-            print("f(X) = ", f(Xi[0], Xi[1], Xi[2]))
+    for i in range(0, len(args)):
+        argList = list(args)
+        argList[i] += alpha
+        simplex.append(getPoint(argList, func(argList)))
+
+    for i in range(0, max_iterations):
+        # 1. Sort
+        simplex.sort(key=itemgetter('value'))
+
+        # if i < 6:
+        points.extend([tuple(sim['arg'] + [sim['value']]) for sim in simplex])
+
+        # 6. Check convergence
+        if abs(simplex[0]['value'] - simplex[-1]['value']) < epsilon:
             break
-        i += 1
 
-    return Xi
+        centroid = [0] * len(args)
+        for j in range(0, len(args)):
+            for k in range(0, len(simplex) - 1):
+                centroid[j] += simplex[k]['arg'][j]
+            centroid[j] /= (len(simplex) - 1)
+
+        # 2. Reflect
+        reflection = [0] * len(args)
+        for j in range(0, len(args)):
+            reflection[j] = centroid[j] + alpha * (centroid[j] - simplex[-1]['arg'][j])
+        reflection_value = func(reflection)
+        counter += 1
+
+        # 3. Evaluate or Extend
+        if simplex[0]['value'] <= reflection_value < simplex[-2]['value']:
+            simplex[-1] = getPoint(reflection, reflection_value)
+            continue
+        elif reflection_value < simplex[0]['value']:
+            extend = [0] * len(args)
+            for j in range(0, len(args)):
+                extend[j] = centroid[j] + gama * (reflection[j] - centroid[j])
+            extended_value = func(extend)
+            counter += 1
+            if extended_value < simplex[0]['value']:
+                simplex[-1] = getPoint(extend, extended_value)
+            else:
+                simplex[-1] = getPoint(reflection, reflection_value)
+            continue
+
+        # 4. Contract
+        contraction = [0] * len(args)
+        for j in range(0, len(args)):
+            contraction[j] = centroid[j] + ro * (simplex[-1]['arg'][j] - centroid[j])
+        contraction_value = func(contraction)
+        counter += 1
+        if contraction_value < simplex[-1]['value']:
+            simplex[-1] = getPoint(contraction, contraction_value)
+            continue
+
+        # 5. Reduce
+        reduce = [0] * len(args)
+        for j in range(1, len(simplex)):
+            for k in range(0, len(args)):
+                reduce[k] = simplex[0]['arg'][k] + beta * (simplex[j]['arg'][k] - simplex[0]['arg'][k])
+            reduce_value = func(reduce[0], reduce[1])
+            counter += 1
+            simplex[j] = getPoint(reduce, reduce_value)
+
+
+    return simplex[0]['arg']
 
 
 def optimization(func, constraints, args, epsilon):
-    x1 = Symbol('x1')
-    x2 = Symbol('x2')
-    x3 = Symbol('x3')
-
     equals = []
     inequals = []
 
@@ -59,26 +89,27 @@ def optimization(func, constraints, args, epsilon):
         elif con.get("type") == "ineq":
             inequals.append(con.get("func"))
 
-    penaltyFunction = lambda x: sum((abs(eq(x)) ** 2) for eq in equals) + sum((abs(min(0, iq(x))) ** 2) for iq in inequals)
+    penaltyFunction = lambda x: sum((abs(eq(x)) ** 2) for eq in equals) + sum(
+        (abs(min(0, iq(x))) ** 2) for iq in inequals)
 
     maxIterations = 100
     # Kaip pasirenkame r?
     r = 1
-    old = f(args[0], args[1], args[2])
+    old = func(args)
     for i in range(1, maxIterations):
         # f(X) + 1/r * b(X)
         # f(X) + 1/r * sum(g1(X)^2) + sum((max(0, h(X))^2)
         bfunc = lambda x: func(x) + 1 / r * penaltyFunction(x)
 
-        args = gradient_descent(bfunc, [x1, x2, x3], args, 3, 0.001)
+        args = simplex_method(bfunc, args)
 
-        new = f(args[0], args[1], args[2])
+        new = func(args)
         if abs(new - old) < epsilon:
             break
         else:
             old = new
 
-    print("X:", args, "\nf(X):", f(args[0], args[1], args[2]), "\niterations:", i)
+    print("X:", args, "\nf(X):", func(args), "\niterations:", i)
 
 
 def main():
@@ -96,10 +127,9 @@ def main():
         {"type": "ineq", "func": h2},
         {"type": "ineq", "func": h3})
 
-    optimization(func, constraints, [1, 1, 1], 0.001)
-
-    print("")
-
+    optimization(func, constraints, [0, 0, 0], 0.0001)
+    optimization(func, constraints, [1, 1, 1], 0.0001)
+    optimization(func, constraints, [0.9, 0.4, 0.9], 0.0001)
 
 if __name__ == "__main__":
     main()

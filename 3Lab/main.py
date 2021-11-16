@@ -41,9 +41,10 @@ def gradient_descent(func, args, X0, gama, epsilon):
             break
         i += 1
 
+    return Xi
+
 
 def optimization(args, epsilon):
-    # cia apsiskaiciuojam kazka
     x1 = Symbol('x1')
     x2 = Symbol('x2')
     x3 = Symbol('x3')
@@ -51,6 +52,7 @@ def optimization(args, epsilon):
     func = -1 * x1 * x2 * x3
 
     maxIterations = 100
+    # Kaip pasirenkame r?
     r = 1
     old = f(args[0], args[1], args[2])
     for i in range(1, maxIterations):
@@ -61,18 +63,17 @@ def optimization(args, epsilon):
 
         new = f(args[0], args[1], args[2])
         if abs(new - old) < epsilon:
-            if i > 1:
-                break;
-            else:
-                args[0] += 0.01
+            break
         else:
             old = new
 
     print("X:", args, "\nf(X):", f(args[0], args[1], args[2]), "\niterations:", i)
 
 
-def penaltyFunction(args, h):
+def penaltyFunction(args):
     g = (2 * args[0] * args[1] + 2 * args[0] * args[2] + 2 * args[2] * args[1]) - 1
+    # Kaip gauti h kaip skaiciu? Nes h yra nelygybe, t.y. hj <= 0
+    h = [0]
 
     gsum = 0
     hsum = 0
@@ -85,22 +86,8 @@ def penaltyFunction(args, h):
     return gsum + hsum
 
 
-def optimize():
-    x1 = Symbol('x1')
-    x2 = Symbol('x2')
-    x3 = Symbol('x3')
-
-    F = -1 * x1 * x2 * x3
-
-
 def main():
-    x1 = Symbol('x1')
-    x2 = Symbol('x2')
-    x3 = Symbol('x3')
-
-    F = -1 * x1 * x2
-
-    gradient_descent(F, [x1, x2, x3], [1, 1, 1], 3, 0.001)
+    print("")
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ def getGrad(func, args):
     return grad
 
 
+# pritaikyt, kad su lambda veiktu
 def gradient_descent(func, args, X0, gama, epsilon):
     i = 1
     Xi = X0
@@ -44,12 +45,21 @@ def gradient_descent(func, args, X0, gama, epsilon):
     return Xi
 
 
-def optimization(args, epsilon):
+def optimization(func, constraints, args, epsilon):
     x1 = Symbol('x1')
     x2 = Symbol('x2')
     x3 = Symbol('x3')
 
-    func = -1 * x1 * x2 * x3
+    equals = []
+    inequals = []
+
+    for con in constraints:
+        if con.get("type") == "eq":
+            equals.append(con.get("func"))
+        elif con.get("type") == "ineq":
+            inequals.append(con.get("func"))
+
+    penaltyFunction = lambda x: sum((abs(eq(x)) ** 2) for eq in equals) + sum((abs(min(0, iq(x))) ** 2) for iq in inequals)
 
     maxIterations = 100
     # Kaip pasirenkame r?
@@ -57,9 +67,10 @@ def optimization(args, epsilon):
     old = f(args[0], args[1], args[2])
     for i in range(1, maxIterations):
         # f(X) + 1/r * b(X)
-        bfunc = func + 1 / r * penaltyFunction(args)
+        # f(X) + 1/r * sum(g1(X)^2) + sum((max(0, h(X))^2)
+        bfunc = lambda x: func(x) + 1 / r * penaltyFunction(x)
 
-        args = gradientFunction(bfunc, [x1, x2, x3], args, 0.001)
+        args = gradient_descent(bfunc, [x1, x2, x3], args, 3, 0.001)
 
         new = f(args[0], args[1], args[2])
         if abs(new - old) < epsilon:
@@ -70,23 +81,23 @@ def optimization(args, epsilon):
     print("X:", args, "\nf(X):", f(args[0], args[1], args[2]), "\niterations:", i)
 
 
-def penaltyFunction(args):
-    g = (2 * args[0] * args[1] + 2 * args[0] * args[2] + 2 * args[2] * args[1]) - 1
-    # Kaip gauti h kaip skaiciu? Nes h yra nelygybe, t.y. hj <= 0
-    h = [0]
-
-    gsum = 0
-    hsum = 0
-    for i in range(0, len(g)):
-        gsum += g[i] ** 2
-
-    for j in range(0, len(h)):
-        hsum += min(0, h[j]) ** 2
-
-    return gsum + hsum
-
-
 def main():
+    func = lambda x: -1 * x[0] * x[1] * x[2]
+
+    g1 = lambda x: (2 * x[0] * x[1] + 2 * x[0] * x[2] + 2 * x[2] * x[1]) - 1
+
+    h1 = lambda x: x[0]
+    h2 = lambda x: x[1]
+    h3 = lambda x: x[2]
+
+    constraints = (
+        {"type": "eq", "func": g1},
+        {"type": "ineq", "func": h1},
+        {"type": "ineq", "func": h2},
+        {"type": "ineq", "func": h3})
+
+    optimization(func, constraints, [1, 1, 1], 0.001)
+
     print("")
 
 

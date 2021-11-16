@@ -1,3 +1,5 @@
+import itertools
+from math import sin
 from operator import itemgetter
 import random
 
@@ -18,10 +20,11 @@ def plot2d(points, iterations, method):
     y = np.arange(0, 1.7, delta)
     X, Y = np.meshgrid(x, y)
     Z = (-1) * (0.125 * X * Y * (1 - X - Y))
-    CS = ax.contour(X, Y, Z, 60, linewidths=0.4)
-    ax.clabel(CS, inline=True, fontsize=10)
+    CS = ax.contour(X, Y, Z, 60, linewidths=0.3)
+    ax.clabel(CS, inline=True, fontsize=5)
     rangeNeeded = int(len(points) / 2)
-    rangeNeededSimplex = int(len(points) / 6)
+    rangeNeededSimplex = int(len(points) / 3)
+    i = 0
     if method == 'gd':
         for i in range(0, rangeNeeded):
             if i + 2 < rangeNeeded and i % 2 == 0:
@@ -33,27 +36,44 @@ def plot2d(points, iterations, method):
                 plt.annotate(iterations[i], (points[i], points[i] + 0.05))
                 plt.annotate(iterations[i + 1], (points[i + 1], points[i + 1] + 0.05))
     elif method == 'sd':
-        for i in range(0, rangeNeeded):
-            if i + 2 < rangeNeeded:
-                ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='.')
+        while i < rangeNeeded:
+            if i + 1 < rangeNeeded:
+                ax.plot(points[i], points[i], marker='.')
+                ax.plot(points[i + 1], points[i + 1], marker='.')
                 plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
-                plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
-            elif i + 2 == rangeNeeded:
-                ax.plot([points[i], points[i + 1]], [points[i], points[i + 1]], marker='x')
+                plt.annotate(i + 1, (points[i + 1], points[i + 1]))
+
+                ax.plot(points[i+2], points[i+2], marker='.')
+                ax.plot(points[i + 3], points[i + 3], marker='.')
+                plt.annotate(i + 2, (points[i+2] + 0.01, points[i+2] + 0.02))
+                plt.annotate(i + 2, (points[i + 3], points[i + 3]))
+
+                i += 2
+            elif i + 1 == rangeNeeded:
+                ax.plot(points[i], points[i], marker='x')
+                ax.plot(points[i + 1], points[i + 1], marker='x')
                 plt.annotate(i + 1, (points[i] + 0.01, points[i] + 0.02))
-                plt.annotate(i + 1, (points[i + 1] - 0.02, points[i + 1] + 0.01))
-    elif method == 'simplex':
-        for i in range(0, rangeNeededSimplex - 1):
+                plt.annotate(i + 1, (points[i + 1], points[i + 1]))
+                i += 2
+    elif method == 'simplex' and len(points) % 3 == 0:
+        for i in range(0, len(points), 3):
+            simp = [points[i], points[i + 1], points[i + 2]]
             r = random.random()
             b = random.random()
             g = random.random()
             a = 1
             color = (r, g, b, a)
-            ax.plot([points[i], points[i + 2], points[i + 4], points[i]],
-                    [points[i + 1], points[i + 3], points[i + 5], points[i + 1]], '-o', color=color)
-            plt.annotate(i + 1, (points[i] + 0.01, points[i + 1] + 0.02))
-            plt.annotate(i + 1, (points[i + 2] - 0.02, points[i + 3] + 0.01))
-            plt.annotate(i + 1, (points[i + 4] - 0.02, points[i + 5] + 0.01))
+            for a, b in itertools.product(simp, simp):
+                x = np.linspace(a[0], b[0], 100)
+                y = np.linspace(a[1], b[1], 100)
+
+                ax.plot(x, y, color=color)
+                # plt.annotate(i+1, (a[0], b[0]))
+                # plt.annotate(i+1, (a[1], b[1]))
+                # plt.annotate(i, (x, y))
+    #             plt.annotate(i + 1, (points[i][0], points[i][1]))
+    #             plt.annotate(i + 1, (points[i+1][0], points[i + 1][1]))
+    #             plt.annotate(i + 1, (points[i+2][0], points[i + 2][1]))
     plt.draw()
     plt.show()
 
@@ -131,6 +151,7 @@ def steepest_descent(func, args, X0, epsilon):
     while i < max_iterations:
         gradMod = 0
         Xtemp = list(Xi)
+        print("i: ", i, "[", Xi[0], ",", Xi[1], "]")
         for j in range(0, len(Xi)):
             gradFunc = gradientFunction(str(grad[j]), Xtemp[0], Xtemp[1])
             gamaFunc = func
@@ -142,17 +163,18 @@ def steepest_descent(func, args, X0, epsilon):
             counter += n_count
 
             Xi[j] = Xi[j] - gama_min * gradFunc
+            print(i, "gamma", gama_min)
             counter += 1
             gradMod += gradFunc
         gradMod = abs(gradMod) / len(Xi)
         points.append(Xi[0])
         points.append(Xi[1])
-        i += 1
         if gradMod < epsilon:
             print("i: ", i, "[", Xi[0], ",", Xi[1], "]")
             print("Counter: ", counter)
             print("f(X) = ", f(Xi[0], Xi[1]))
             break
+        i += 1
     plot2d(points, 0, 'sd')
 
 
@@ -175,13 +197,10 @@ def simplex_method(args, X0, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, ro=
         # 1. Sort
         simplex.sort(key=itemgetter('value'))
 
-        if i % 5 == 0:
-            points.append(simplex[0]['arg'][0])
-            points.append(simplex[0]['arg'][1])
-            points.append(simplex[1]['arg'][0])
-            points.append(simplex[1]['arg'][1])
-            points.append(simplex[2]['arg'][0])
-            points.append(simplex[2]['arg'][1])
+        print("i: ", i + 1, simplex[0]['arg'])
+
+        # if i < 6:
+        points.extend([tuple(sim['arg'] + [sim['value']]) for sim in simplex])
 
         # 6. Check convergence
         if abs(simplex[0]['value'] - simplex[-1]['value']) < epsilon:
@@ -245,6 +264,7 @@ def main():
     x1 = Symbol('x1')
     x2 = Symbol('x2')
     F = -1 * (0.125 * x1 * x2 * (1 - x1 - x2))
+
     grad = getGrad(F, [x1, x2])
 
     # print("Tikslo ir gradiento funkciju reiksmes (0, 0)", f(0, 0), gradientFunction(str(grad), 0, 0))
@@ -255,8 +275,10 @@ def main():
     # gradient_descent(F, [x1, x2], [1, 1], 3, 0.001)
     # gradient_descent(F, [x1, x2], [0.4, 0.9], 3, 0.001)
 
+    print(F(1,1,1))
+
     # steepest_descent(F, [x1, x2], [0, 0], 0.001)
-    # steepest_descent(F, [x1, x2], [1, 1], 0.001)
+    # steepest_descent(F, [x1, x2], [0.1, 0.1], 0.001)
     # steepest_descent(F, [x1, x2], [0.4, 0.9], 0.001)
 
     # simplex_method([x1, x2], [0, 0])

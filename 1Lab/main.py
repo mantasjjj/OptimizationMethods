@@ -195,10 +195,11 @@ def createGraph(func, char):
 
 
 def main():
-    function = "((x ** 2 - 4) ** 2 /9-1)"
-    bisection_method(function, 0, 10, 0.0001)
+    # function = "((x ** 2 - 4) ** 2 /9-1)"
+    function = "(100 - x)**2"
+    bisection_method(function, 0, 1, 0.0001)
     golden_section(function, 0, 10, 0.0001, 0.61803)
-    newtons_method(function, 5, 0.0001)
+    newtons_method(function, 2, 0.0001)
     createGraph(function, 'b')
 
 

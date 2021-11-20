@@ -1,6 +1,5 @@
 from operator import itemgetter
 
-
 def getPoint(arg, value):
     return {"arg": arg, "value": value}
 
@@ -67,7 +66,7 @@ def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, r
         for j in range(1, len(simplex)):
             for k in range(0, len(args)):
                 reduce[k] = simplex[0]['arg'][k] + beta * (simplex[j]['arg'][k] - simplex[0]['arg'][k])
-            reduce_value = func(reduce[0], reduce[1])
+            reduce_value = func(reduce)
             counter += 1
             simplex[j] = getPoint(reduce, reduce_value)
 
@@ -88,15 +87,16 @@ def optimization(func, constraints, args, epsilon):
         (abs(max(0, iq(x))) ** 2) for iq in inequals)
 
     maxIterations = 100
-    # Kaip pasirenkame r?
-    r = 1
+    r = lambda x: x * 0.5
     old = func(args)
+    penaltyQuantifier = 2
     for i in range(1, maxIterations):
-        # f(X) + 1/r * b(X)
-        # f(X) + 1/r * sum(g1(X)^2) + sum((max(0, h(X))^2)
-        bfunc = lambda x: func(x) + 1 / r * penaltyFunction(x)
+        bfunc = lambda x: func(x) + 1/r(penaltyQuantifier) * penaltyFunction(x)
+        penaltyQuantifier = r(penaltyQuantifier)
 
         args = simplex_method(bfunc, args)
+
+        print("r: ", r(penaltyQuantifier))
 
         new = func(args)
         if abs(new - old) < epsilon:
@@ -108,14 +108,14 @@ def optimization(func, constraints, args, epsilon):
 
 
 def main():
-    func = lambda x: -1 * x[0] * x[1] * x[2]
+    # Budas 1: kai funkcija yra Spav, o g yra plotas - 1
+    func = lambda x: -1 * (2 * x[0] * x[1] + 2 * x[0] * x[2] + 2 * x[2] * x[1])
 
-    g1 = lambda x: (2 * x[0] * x[1] + 2 * x[0] * x[2] + 2 * x[2] * x[1]) - 1
+    g1 = lambda x: x[0] + x[1] + x[2] - 1
 
-    # https://stackoverflow.com/questions/37818596/penalty-function-method
-    h1 = lambda x: x[0]
-    h2 = lambda x: x[1]
-    h3 = lambda x: x[2]
+    h1 = lambda x: x[0] - 1
+    h2 = lambda x: x[1] - 1
+    h3 = lambda x: x[2] - 1
 
     constraints = (
         {"type": "eq", "func": g1},
@@ -123,7 +123,9 @@ def main():
         {"type": "ineq", "func": h2},
         {"type": "ineq", "func": h3})
 
+    optimization(func, constraints, [0, 0, 0], 0.0001)
     optimization(func, constraints, [1, 1, 1], 0.0001)
+    optimization(func, constraints, [0.9, 0.4, 0.9], 0.0001)
 
 
 if __name__ == "__main__":

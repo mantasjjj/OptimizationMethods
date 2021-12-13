@@ -275,14 +275,13 @@ def main():
     # gradient_descent(F, [x1, x2], [1, 1], 3, 0.001)
     # gradient_descent(F, [x1, x2], [0.4, 0.9], 3, 0.001)
 
-    print(F(1,1,1))
 
     # steepest_descent(F, [x1, x2], [0, 0], 0.001)
     # steepest_descent(F, [x1, x2], [0.1, 0.1], 0.001)
     # steepest_descent(F, [x1, x2], [0.4, 0.9], 0.001)
 
     # simplex_method([x1, x2], [0, 0])
-    # simplex_method([x1, x2], [1, 1])
+    simplex_method([x1, x2], [1, 1])
     # simplex_method([x1, x2], [0.4, 0.9])
 
 

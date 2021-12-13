@@ -1,5 +1,6 @@
 from operator import itemgetter
 
+
 def getPoint(arg, value):
     return {"arg": arg, "value": value}
 
@@ -70,12 +71,14 @@ def simplex_method(func, args, epsilon=0.0000001, alpha=0.5, beta=0.5, gama=3, r
             counter += 1
             simplex[j] = getPoint(reduce, reduce_value)
 
-    return simplex[0]['arg']
+    return simplex[0]['arg'], counter
 
 
 def optimization(func, constraints, args, epsilon):
     equals = []
     inequals = []
+    counter = 0
+    c = 0
 
     for con in constraints:
         if con.get("type") == "eq":
@@ -89,14 +92,17 @@ def optimization(func, constraints, args, epsilon):
     maxIterations = 100
     r = lambda x: x * 0.5
     old = func(args)
-    penaltyQuantifier = 2
+    penaltyQuantifier = 1
     for i in range(1, maxIterations):
-        bfunc = lambda x: func(x) + 1/r(penaltyQuantifier) * penaltyFunction(x)
+        print("r: ", r(penaltyQuantifier))
+        bfunc = lambda x: func(x) + 1 / r(penaltyQuantifier) * penaltyFunction(x)
+        print("Baudos funkcija:", bfunc(args))
+        print("F(X): ", func(args))
         penaltyQuantifier = r(penaltyQuantifier)
 
-        args = simplex_method(bfunc, args)
+        args, c = simplex_method(bfunc, args)
 
-        print("r: ", r(penaltyQuantifier))
+        counter += c
 
         new = func(args)
         if abs(new - old) < epsilon:
@@ -105,6 +111,7 @@ def optimization(func, constraints, args, epsilon):
             old = new
 
     print("X:", args, "\nf(X):", func(args), "\niterations:", i)
+    print("counter: ", c)
 
 
 def main():
@@ -123,8 +130,28 @@ def main():
         {"type": "ineq", "func": h2},
         {"type": "ineq", "func": h3})
 
-    optimization(func, constraints, [0, 0, 0], 0.0001)
-    optimization(func, constraints, [1, 1, 1], 0.0001)
+    # print("Funkcija taske 0,0,0:", func([0, 0, 0]))
+    print("Funkcija taske 1,1,1:", func([1, 1, 1]))
+    # print("Funkcija taske 0.9,0.4,0.9:", func([0.9, 0.4, 0.9]))
+
+    print("g(X) taske 0,0,0:", g1([0, 0, 0]))
+    print("g(X) taske 1, 1, 1:", g1([1, 1, 1]))
+    print("g(X) taske 0.9,0.4,0.9:", g1([0.9, 0.4, 0.9]))
+
+    print("h1(X) taske 0,0,0:", h1([0, 0, 0]))
+    print("h2(X) taske 0,0,0:", h2([0, 0, 0]))
+    print("h3(X) taske 0,0,0:", h3([0, 0, 0]))
+
+    print("h1(X) taske 1,1,1:", h1([1, 1, 1]))
+    print("h2(X) taske 1,1,1:", h2([1, 1, 1]))
+    print("h3(X) taske 1,1,1:", h3([1, 1, 1]))
+
+    print("h1(X) taske 0.9,0.4,0.9:", h1([0.9, 0.4, 0.9]))
+    print("h2(X) taske 0.9,0.4,0.9:", h2([0.9, 0.4, 0.9]))
+    print("h3(X) taske 0.9,0.4,0.9:", h3([0.9, 0.4, 0.9]))
+
+    # optimization(func, constraints, [0, 0, 0], 0.0001)
+    # optimization(func, constraints, [1, 1, 1], 0.0001)
     optimization(func, constraints, [0.9, 0.4, 0.9], 0.0001)
 
 

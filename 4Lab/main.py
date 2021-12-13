@@ -34,7 +34,7 @@ class LinearModel:
         self.printIter = printIter
 
     def printSoln(self):
-        print("Coefficients: ")
+        print("Optimal solution: ")
         print(self.x)
         print("Optimal value: ")
         print(self.optimalValue)
@@ -187,11 +187,11 @@ def main():
     c = np.array([2, -3, 0, -5])
 
     # Restrictions a,b,c, that are from 1*1*abc
-    A = np.array([[-1, 1, -1, -1],
-                  [2, 4, 0, 0],
-                  [0, 0, 1, 1]])
-    b = np.array([0, 4, 9])
-    c = np.array([2, -3, 0, -5])
+    # A = np.array([[-1, 1, -1, -1],
+    #               [2, 4, 0, 0],
+    #               [0, 0, 1, 1]])
+    # b = np.array([0, 4, 9])
+    # c = np.array([2, -3, 0, -5])
 
     model1.addA(A)
     model1.addB(b)

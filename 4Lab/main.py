@@ -36,6 +36,14 @@ class LinearModel:
     def printSoln(self):
         print("Optimal solution: ")
         print(self.x)
+        print("Base:")
+        print("[", end="")
+        for i in range(0, len(self.x)):
+            if self.x[i] != 0 and i + 1 != len(self.x):
+                print(i + 1, end=", ")
+            elif self.x[i] != 0 and i != len(self.x):
+                print(i + 1, end="")
+        print("]")
         print("Optimal value: ")
         print(self.optimalValue)
 
